@@ -1,6 +1,7 @@
 #![feature(async_await)]
+use std::convert::TryFrom;
 use std::io::{Read, Write};
-use std::net::TcpStream;
+use std::net::{SocketAddr, TcpStream};
 use std::thread;
 
 use futures::executor;
@@ -78,4 +79,12 @@ fn both_sides_async_using_threadpool() {
         stream.read_exact(&mut buf).await.unwrap();
         assert_eq!(buf, THE_WINTERS_TALE);
     }));
+}
+
+#[test]
+fn listener_from_std() {
+    drop(env_logger::try_init());
+    let addr: SocketAddr = "127.0.0.1:0".parse().unwrap();
+    let std_socket = std::net::TcpListener::bind(&addr).unwrap();
+    let _ = TcpListener::try_from(std_socket).unwrap();
 }

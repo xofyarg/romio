@@ -11,6 +11,7 @@
 //! [received from]: #method.poll_recv_from
 //! [sent to]: #method.poll_send_to
 
+use std::convert::TryFrom;
 use std::fmt;
 use std::io;
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr};
@@ -399,6 +400,14 @@ mod sys {
         fn as_raw_fd(&self) -> RawFd {
             self.io.get_ref().as_raw_fd()
         }
+    }
+}
+
+impl TryFrom<std::net::UdpSocket> for UdpSocket {
+    type Error = io::Error;
+
+    fn try_from(socket: std::net::UdpSocket) -> Result<Self, Self::Error> {
+        mio::net::UdpSocket::from_socket(socket).map(UdpSocket::new)
     }
 }
 

@@ -1,5 +1,6 @@
 use super::TcpStream;
 
+use std::convert::TryFrom;
 use std::fmt;
 use std::io;
 use std::net::{self, SocketAddr};
@@ -240,6 +241,14 @@ mod sys {
         fn as_raw_fd(&self) -> RawFd {
             self.io.get_ref().as_raw_fd()
         }
+    }
+}
+
+impl TryFrom<std::net::TcpListener> for TcpListener {
+    type Error = io::Error;
+
+    fn try_from(socket: std::net::TcpListener) -> Result<Self, Self::Error> {
+        mio::net::TcpListener::from_std(socket).map(TcpListener::new)
     }
 }
 
