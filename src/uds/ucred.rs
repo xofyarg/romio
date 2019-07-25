@@ -86,12 +86,14 @@ pub(crate) mod impl_macos {
         unsafe {
             let raw_fd = sock.as_raw_fd();
 
-            let mut cred: super::UCred = mem::uninitialized();
-
-            let ret = getpeereid(raw_fd, &mut cred.uid, &mut cred.gid);
+            let mut cred = mem::MaybeUninit::<super::UCred>::uninit();
+            let ret = {
+                let cred_mut = cred.as_mut_ptr();
+                getpeereid(raw_fd, &mut (*cred_mut).uid, &mut (*cred_mut).gid)
+            };
 
             if ret == 0 {
-                Ok(cred)
+                Ok(cred.assume_init())
             } else {
                 Err(io::Error::last_os_error())
             }
