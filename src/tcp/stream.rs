@@ -525,6 +525,21 @@ impl AsyncWriteReady for TcpStream {
     }
 }
 
+impl io::Read for TcpStream {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize, io::Error> {
+        self.io.get_mut().read(buf)
+    }
+}
+
+impl io::Write for TcpStream {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
+        self.io.get_mut().write(buf)
+    }
+    fn flush(&mut self) -> Result<(), io::Error> {
+        self.io.get_mut().flush()
+    }
+}
+
 impl fmt::Debug for TcpStream {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.io.get_ref().fmt(f)
