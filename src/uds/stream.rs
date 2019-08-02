@@ -248,6 +248,21 @@ impl TakeError for UnixStream {
     }
 }
 
+impl io::Read for UnixStream {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize, io::Error> {
+        self.io.get_mut().read(buf)
+    }
+}
+
+impl io::Write for UnixStream {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
+        self.io.get_mut().write(buf)
+    }
+    fn flush(&mut self) -> Result<(), io::Error> {
+        self.io.get_mut().flush()
+    }
+}
+
 impl fmt::Debug for UnixStream {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.io.get_ref().fmt(f)
