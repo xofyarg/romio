@@ -6,6 +6,7 @@ use async_ready::{AsyncReady, TakeError};
 use futures::{ready, Poll, Stream};
 use mio_uds;
 
+use std::convert::TryFrom;
 use std::fmt;
 use std::io;
 use std::os::unix::io::{AsRawFd, RawFd};
@@ -60,6 +61,11 @@ impl UnixListener {
         let listener = mio_uds::UnixListener::bind(path)?;
         let io = PollEvented::new(listener);
         Ok(UnixListener { io })
+    }
+
+    fn new(listener: mio_uds::UnixListener) -> Self {
+        let io = PollEvented::new(listener);
+        Self { io }
     }
 
     /// Returns the local socket address of this listener.
@@ -177,6 +183,14 @@ impl fmt::Debug for UnixListener {
 impl AsRawFd for UnixListener {
     fn as_raw_fd(&self) -> RawFd {
         self.io.get_ref().as_raw_fd()
+    }
+}
+
+impl TryFrom<net::UnixListener> for UnixListener {
+    type Error = io::Error;
+
+    fn try_from(socket: net::UnixListener) -> Result<Self, Self::Error> {
+        mio_uds::UnixListener::from_listener(socket).map(UnixListener::new)
     }
 }
 
